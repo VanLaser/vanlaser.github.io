@@ -2,8 +2,8 @@
 
 There is a great, old, unique-kind-of strategy game called "Majesty", that was
 ported to Linux a long time ago. The game /can/ be installed on modern systems
-- even 64bit, if the relevant 32bit libraries are installed on the Linux distro
-you're using - e.g. with Arch Linux, they go to the =/usr/lib32= folder - and
+-- even 64bit, if the relevant 32bit libraries are installed on the Linux distro
+you're using -- e.g. with Arch Linux, they go to the =/usr/lib32= folder - and
 assuming you can dig up the game CD-ROM. There are some caveats though:
 
  - when running in full-screen mode, the resolution is messed up on both my
@@ -11,24 +11,19 @@ assuming you can dig up the game CD-ROM. There are some caveats though:
  - when using the SDL libraries that come with the game, the sound system tries
    to open =/dev/dsp=, which nowadays (with Alsa and Pulse) does not exist
    anymore.
- - by default, the in-game scrolling speed is way too fast, and can't be changed 
+ - by default, the game scrolling speed is way too fast, even when with /Fast
+   Scrolling/ set to =Off= (the default).
 
 The first issue can be solved by passing the =-w= flag to the game executable,
-at least once. The sound problem can be avoided either by using the old OSS:
+at least once. The sound problem can be avoided either by using the old OSS (
+=sudo modprobe snd_seq_oss snd_pcm_oss snd_mixer_oss= ) ... or (I think, the
+preferable way) is to use a newer version of the SDL 1.2 library (of course, you
+have to install it first), instead of its own:
 
-#+BEGIN_SRC sh
-$ sudo modprobe snd_seq_oss snd_pcm_oss snd_mixer_oss
-#+END_SRC
+=$ LD_LIBRARY_PATH=/usr/lib32 $HOME/games/majesty/majx -w=
 
-.. or (I think, the preferable way) is to make the use a newer version of the
-SDL 1.2 library (of course, you have to install it first), instead of its own:
-
-#+BEGIN_SRC sh
-LD_LIBRARY_PATH=/usr/lib32 $HOME/games/majesty/majx -w
-#+END_SRC
-
-... since the newer SDL library knows to switch to Alsa or Pulse, and can even be
-controlled using environment variables.
+... since the newer SDL library knows to switch to Alsa or Pulse, and can even
+be controlled using environment variables.
 
 The in-game scrolling speed can be adjusted by editing directly the game's
 configuration file: =.lgp/majx/majxprefs= (that's also possible with Majesty
@@ -54,6 +49,13 @@ $ xrandr --output VGA1 --mode 1920x1080 --scale-from 1440x900
 (where the =mode= is the current monitor resolution, one you're trying to keep)
 ... and presto!, the screen got scaled and you can better see your small window.
 
+Restoring the scale (after the game is over):
+
+#+BEGIN_SRC sh
+$ xrandr --output VGA1 --mode 1920x1080 --scale 1x1
+#+END_SRC
+
+
 * Grabbing input on request
 
 The remaining (very annoying!) issue is that, when playing in windowed mode, the
@@ -73,4 +75,74 @@ game window should be something that can be done and undone (a toggle action),
 since as mentioned above one may need to move the mouse, or change window focus,
 or type in another window, on another monitor etc.
 
+Since the source code is not available ... =LD_PRELOAD= to the rescue! The
+game is SDL-based, and the trick here is to pre-load (i.e. inject) a library that
+overrides the =SDL_GetKeyState= function, in order to perform some *extra*
+actions, when called:
 
+ - check if the user pressed either =RCTRL= (VirtualBox-inspired) or (since not
+   all keyboards have a right control key! e.g. HHKB) the =LCTRL-SPACE= combo.
+   If so:
+ - grab input if it's not grabbed, release it if it's grabbed (the toggle).
+
+But how does one knows which SDL functions the game uses? Running:
+
+#+BEGIN_SRC sh
+$ strings majx | grep SDL
+#+END_SRC
+
+... to get the list of functions, and reading some of the SDL 1.2 API docs is
+enough.
+
+The code:
+
+#+BEGIN_SRC c
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <SDL/SDL.h>
+
+// pointer to the real function
+Uint8* (*real_SDL_GetKeyState) (int *numkeys) = NULL;
+
+void __attribute__ ((constructor)) jail_init(void)
+{
+	// match the library name loaded by our binary target
+	dlopen("libSDL-1.2.so.0", RTLD_LAZY);
+	real_SDL_GetKeyState = dlsym(RTLD_NEXT, "SDL_GetKeyState");
+}
+
+// the wrapper
+Uint8* SDL_GetKeyState (int *numkeys)
+{
+	Uint8* keys;
+	SDL_GrabMode mode;
+
+	keys = (*real_SDL_GetKeyState)(numkeys);
+
+	if ((keys[SDLK_LCTRL] && keys[SDLK_SPACE])|| keys[SDLK_RCTRL])
+	{
+		keys[SDLK_SPACE] = 0;
+		mode = SDL_WM_GrabInput(SDL_GRAB_QUERY);
+		SDL_WM_GrabInput((mode == SDL_GRAB_OFF ?
+                                  SDL_GRAB_ON : SDL_GRAB_OFF));
+	}
+
+	return keys;
+}
+#+END_SRC
+
+Building on Arch Linux (64bit, =gcc-multilib= package):
+
+#+BEGIN_SRC sh
+$ gcc -m32 -fPIC -shared -o libjail.so jail.c -ldl
+#+END_SRC
+
+And finally, to run the game, use the following script, placed
+in a folder from your =PATH=:
+
+#+BEGIN_SRC sh
+#!/bin/sh
+LD_LIBRARY_PATH=/usr/lib32 \
+LD_PRELOAD=$HOME/games/majesty/libjail.so \
+$HOME/games/majesty/majx -w
+#+END_SRC
