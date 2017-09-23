@@ -1,0 +1,4 @@
+Sitemap: https://vanlaser.github.io/sitemapindex.xml
+
+User-Agent: *
+Host: vanlaser.github.io
