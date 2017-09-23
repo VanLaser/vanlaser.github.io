@@ -1,0 +1,76 @@
+* Intro
+
+There is a great, old, unique-kind-of strategy game called "Majesty", that was
+ported to Linux a long time ago. The game /can/ be installed on modern systems
+- even 64bit, if the relevant 32bit libraries are installed on the Linux distro
+you're using - e.g. with Arch Linux, they go to the =/usr/lib32= folder - and
+assuming you can dig up the game CD-ROM. There are some caveats though:
+
+ - when running in full-screen mode, the resolution is messed up on both my
+   monitors, and it's also not restored after the game exits.
+ - when using the SDL libraries that come with the game, the sound system tries
+   to open =/dev/dsp=, which nowadays (with Alsa and Pulse) does not exist
+   anymore.
+ - by default, the in-game scrolling speed is way too fast, and can't be changed 
+
+The first issue can be solved by passing the =-w= flag to the game executable,
+at least once. The sound problem can be avoided either by using the old OSS:
+
+#+BEGIN_SRC sh
+$ sudo modprobe snd_seq_oss snd_pcm_oss snd_mixer_oss
+#+END_SRC
+
+.. or (I think, the preferable way) is to make the use a newer version of the
+SDL 1.2 library (of course, you have to install it first), instead of its own:
+
+#+BEGIN_SRC sh
+LD_LIBRARY_PATH=/usr/lib32 $HOME/games/majesty/majx -w
+#+END_SRC
+
+... since the newer SDL library knows to switch to Alsa or Pulse, and can even be
+controlled using environment variables.
+
+The in-game scrolling speed can be adjusted by editing directly the game's
+configuration file: =.lgp/majx/majxprefs= (that's also possible with Majesty
+Gold in Windows, where there's an =.INI= file instead). I find a value of 5 to
+be just right:
+
+#+BEGIN_SRC xml
+<ScrollSpeed>5</ScrollSpeed>
+#+END_SRC
+
+The *fun* part starts when trying to play the game in windowed mode: the fixed
+800x600 resolution, on 1920x1080 monitors, it's not great, but can be easily
+circumvented, for example, by /scaling/ the monitor output with =xrandr=, for
+the duration of the game. You can get the name (e.g. =VGA1=) and the available
+resolutions for your monitor(s) using =xrandr -q=. Then, to scale the output *as
+if* you're switching to another resolution (say 1440x900), you can use something
+like:
+
+#+BEGIN_SRC sh
+$ xrandr --output VGA1 --mode 1920x1080 --scale-from 1440x900
+#+END_SRC
+
+(where the =mode= is the current monitor resolution, one you're trying to keep)
+... and presto!, the screen got scaled and you can better see your small window.
+
+* Grabbing input on request
+
+The remaining (very annoying!) issue is that, when playing in windowed mode, the
+cursor can leave the game area, and can be moved to another windows or to
+another monitor etc. This isn't bad /per se/, because from time to time one may
+need to do some other stuff on the computer (and the game can be paused). But
+the darn thing is that, as in many strategy games, moving the cursor to the
+edges of the game screen is associated with in-game /scrolling/, which is a
+pretty important and so-often used action. Or, when moving the cursor just a
+little too fast over the game window edge, the scrolling action doesn't get
+triggered, and ... nothing happens instead!
+
+So, how to solve this? Certainly one solution is to somehow make the game grab
+the mouse input and confine it to the game area, but this only happens in
+full-screen mode (which we're not using). Also, grabbing the input inside the
+game window should be something that can be done and undone (a toggle action),
+since as mentioned above one may need to move the mouse, or change window focus,
+or type in another window, on another monitor etc.
+
+
