@@ -141,7 +141,11 @@ NAVIGATION_LINKS = {
 }
 
 # Name of the theme to use.
-THEME = "srcco.de"
+#THEME = "bootstrap3"
+THEME = "bnw"
+GLOBAL_CONTEXT = {
+    'github': 'VanLaser',
+}
 
 # Primary color of your theme. This will be used to customize your theme and
 # auto-generate related colors in POSTS_SECTION_COLORS. Must be a HEX value.
@@ -731,7 +735,7 @@ GITHUB_COMMIT_SOURCE = True
 # use this feature if you do not understand what this means.
 
 # Compiler to process LESS files.
-# LESS_COMPILER = 'lessc'
+LESS_COMPILER = 'lessc'
 
 # A list of options to pass to the LESS compiler.
 # Final command is: LESS_COMPILER LESS_OPTIONS file.less
@@ -887,7 +891,7 @@ IMAGE_FOLDERS = {'images': 'images'}
 # paraiso-light, pastie, perldoc, rrt, tango, trac, vim, vs, xcode
 # This list MAY be incomplete since pygments adds styles every now and then.
 # Check with list(pygments.styles.get_all_styles()) in an interpreter.
-# CODE_COLOR_SCHEME = 'default'
+# CODE_COLOR_SCHEME = 'tango'
 
 # FAVICONS contains (name, file, size) tuples.
 # Used to create favicon link like this:
@@ -1302,7 +1306,7 @@ UNSLUGIFY_TITLES = True
 # If webassets is installed, bundle JS and CSS into single files to make
 # site loading faster in a HTTP/1.1 environment but is not recommended for
 # HTTP/2.0 when caching is used. Defaults to True.
-# USE_BUNDLES = True
+USE_BUNDLES = False
 
 # Plugins you don't want to use. Be careful :-)
 # DISABLED_PLUGINS = ["render_galleries"]

@@ -3,10 +3,10 @@
 There is a great, old, unique-kind-of strategy game called "Majesty", that was
 ported to Linux a long time ago. The game /can/ be installed on modern systems
 -- even 64bit, if the relevant 32bit libraries are installed on the Linux distro
-you're using -- e.g. with Arch Linux, they go to the =/usr/lib32= folder - and
+you're using -- e.g. with Arch Linux, they go to the =/usr/lib32= folder, and
 assuming you can dig up the game CD-ROM. There are some caveats though:
 
- - when running in full-screen mode, the resolution is messed up on both my
+ - when running in full-screen mode, the resolution is messed up on /both/
    monitors, and it's also not restored after the game exits.
  - when using the SDL libraries that come with the game, the sound system tries
    to open =/dev/dsp=, which nowadays (with Alsa and Pulse) does not exist
@@ -15,12 +15,18 @@ assuming you can dig up the game CD-ROM. There are some caveats though:
    Scrolling/ set to =Off= (the default).
 
 The first issue can be solved by passing the =-w= flag to the game executable,
-at least once. The sound problem can be avoided either by using the old OSS (
-=sudo modprobe snd_seq_oss snd_pcm_oss snd_mixer_oss= ) ... or (I think, the
-preferable way) is to use a newer version of the SDL 1.2 library (of course, you
-have to install it first), instead of its own:
+at least once. The sound problem can be avoided either by using the old OSS:
 
-=$ LD_LIBRARY_PATH=/usr/lib32 $HOME/games/majesty/majx -w=
+#+BEGIN_SRC sh
+$ sudo modprobe snd_seq_oss snd_pcm_oss snd_mixer_oss
+#+END_SRC
+
+ ... or, the preferable way I think is to use a newer version of the SDL 1.2
+library (of course, you have to install it first), instead of its own:
+
+#+BEGIN_SRC sh
+$ LD_LIBRARY_PATH=/usr/lib32 $HOME/games/majesty/majx -w
+#+END_SRC
 
 ... since the newer SDL library knows to switch to Alsa or Pulse, and can even
 be controlled using environment variables.
@@ -123,9 +129,8 @@ Uint8* SDL_GetKeyState (int *numkeys)
 	{
 		keys[SDLK_SPACE] = 0;
 		mode = SDL_WM_GrabInput(SDL_GRAB_QUERY);
-		SDL_WM_GrabInput((mode == SDL_GRAB_OFF ?
-                                  SDL_GRAB_ON : SDL_GRAB_OFF));
-	}
+                SDL_WM_GrabInput(mode == SDL_GRAB_OFF ? SDL_GRAB_ON : SDL_GRAB_OFF);
+        }
 
 	return keys;
 }
@@ -142,7 +147,5 @@ in a folder from your =PATH=:
 
 #+BEGIN_SRC sh
 #!/bin/sh
-LD_LIBRARY_PATH=/usr/lib32 \
-LD_PRELOAD=$HOME/games/majesty/libjail.so \
-$HOME/games/majesty/majx -w
+LD_LIBRARY_PATH=/usr/lib32 LD_PRELOAD=$HOME/games/majesty/libjail.so $HOME/games/majesty/majx -w
 #+END_SRC
