@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " vocab="http://ogp.me/ns" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>LD_PRELOAD for fun and profit | M-x laser</title>
+<link href="../../assets/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/rst.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/code.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/bnw.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/custom.css" rel="stylesheet" type="text/css">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="https://vanlaser.github.io/posts/ld_preload-for-fun-and-profit/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="VanLaser">
+<meta property="og:site_name" content="M-x laser">
+<meta property="og:title" content="LD_PRELOAD for fun and profit">
+<meta property="og:url" content="https://vanlaser.github.io/posts/ld_preload-for-fun-and-profit/">
+<meta property="og:description" content='Intro
+
+
+There is a great, old, unique-kind-of strategy game called "Majesty", that was
+ported to Linux a long time ago. The game can be installed on modern systems
+– even 64bit, if the relevant 32bit '>
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2017-09-24T00:07:39+03:00">
+<meta property="article:tag" content="C">
+<meta property="article:tag" content="LD_PRELOAD">
+<meta property="article:tag" content="SDL">
+</head>
+<body>
+    
+
+    <header id="header" class="navbar"><div class="container">
+            
+    <div class="brand">
+
+        <div class="brand-text">
+            <a href="https://vanlaser.github.io/" title="M-x laser" rel="home">
+                M-x laser
+            </a>
+        </div>
+
+        <a id="btn-toggle-nav" class="navbar-toggle">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+    </div>
+
+            
+    <nav class="navbar-collapse collapse"><ul class="nav">
+<li><a href="../../archive.html">Archive</a></li>
+                <li><a href="../../categories/">Tags</a></li>
+                <li><a href="../../rss.xml">RSS feed</a></li>
+    
+    
+    </ul></nav>
+</div>
+    </header><div class="header-padding"> </div>
+
+    
+    <div class="post-header">
+        <div class="container">
+            <div class="title">
+                LD_PRELOAD for fun and profit
+            </div>
+        </div>
+    </div>
+
+    <div class="post-meta">
+      <div class="container">
+	<div class="meta clearfix">
+	  <div class="authordate">
+	    <time class="timeago" datetime="2017-09-24T00:07:39+03:00">2017/09/24</time>
+	    
+
+	    
+          |  
+        <a href="index.org" id="sourcelink">Source</a>
+
+	  </div>
+	  <div class="post-tags">
+	    <div class="tag">
+	      <a href="../../categories/c/" rel="tag">C</a>
+	    </div>
+	    <div class="tag">
+	      <a href="../../categories/ld_preload/" rel="tag">LD_PRELOAD</a>
+	    </div>
+	    <div class="tag">
+	      <a href="../../categories/sdl/" rel="tag">SDL</a>
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+    
+    
+    <div id="post-main" class="main">
+        <div class="container">
+        <div id="outline-container-org13af15f" class="outline-2">
+<h2 id="org13af15f">Intro</h2>
+<div class="outline-text-2" id="text-org13af15f">
+<p>
+There is a great, old, unique-kind-of strategy game called "Majesty", that was
+ported to Linux a long time ago. The game <i>can</i> be installed on modern systems
+– even 64bit, if the relevant 32bit libraries are installed on the Linux distro
+you're using – e.g. with Arch Linux, they go to the <code>/usr/lib32</code> folder, and
+assuming you can dig up the game CD-ROM. There are some caveats though:
+</p>
+
+<ul class="org-ul">
+<li>when running in full-screen mode, the resolution is messed up on <i>both</i>
+monitors, and it's also not restored after the game exits.</li>
+<li>when using the SDL libraries that come with the game, the sound system tries
+to open <code>/dev/dsp</code>, which nowadays (with Alsa and Pulse) does not exist
+anymore.</li>
+<li>by default, the game scrolling speed is way too fast, even when with <i>Fast
+Scrolling</i> set to <code>Off</code> (the default).</li>
+</ul>
+<p>
+The first issue can be solved by passing the <code>-w</code> flag to the game executable,
+at least once. The sound problem can be avoided either by using the old OSS:
+</p>
+
+<div class="highlight"><pre><span></span>$ sudo modprobe snd_seq_oss snd_pcm_oss snd_mixer_oss
+</pre></div>
+
+<p>
+ … or, the preferable way I think is to use a newer version of the SDL 1.2
+library (of course, you have to install it first), instead of its own:
+</p>
+
+<div class="highlight"><pre><span></span>$ <span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span>/usr/lib32 <span class="nv">$HOME</span>/games/majesty/majx -w
+</pre></div>
+
+<p>
+… since the newer SDL library knows to switch to Alsa or Pulse, and can even
+be controlled using environment variables.
+</p>
+
+<p>
+The in-game scrolling speed can be adjusted by editing directly the game's
+configuration file: <code>.lgp/majx/majxprefs</code> (that's also possible with Majesty
+Gold in Windows, where there's an <code>.INI</code> file instead). I find a value of 5 to
+be just right:
+</p>
+
+<div class="highlight"><pre><span></span>&lt;ScrollSpeed&gt;5&lt;/ScrollSpeed&gt;
+</pre></div>
+
+<p>
+The <b>fun</b> part starts when trying to play the game in windowed mode: the fixed
+800x600 resolution, on 1920x1080 monitors, it's not great, but can be easily
+circumvented, for example, by <i>scaling</i> the monitor output with <code>xrandr</code>, for
+the duration of the game. You can get the name (e.g. <code>VGA1</code>) and the available
+resolutions for your monitor(s) using <code>xrandr -q</code>. Then, to scale the output <b>as
+if</b> you're switching to another resolution (say 1440x900), you can use something
+like:
+</p>
+
+<div class="highlight"><pre><span></span>$ xrandr --output VGA1 --mode 1920x1080 --scale-from 1440x900
+</pre></div>
+
+<p>
+(where the <code>mode</code> is the current monitor resolution, one you're trying to keep)
+… and presto!, the screen got scaled and you can better see your small window.
+</p>
+
+<p>
+Restoring the scale (after the game is over):
+</p>
+
+<div class="highlight"><pre><span></span>$ xrandr --output VGA1 --mode 1920x1080 --scale 1x1
+</pre></div>
+</div>
+</div>
+
+
+<div id="outline-container-org28b32b6" class="outline-2">
+<h2 id="org28b32b6">Grabbing input on request</h2>
+<div class="outline-text-2" id="text-org28b32b6">
+<p>
+The remaining (very annoying!) issue is that, when playing in windowed mode, the
+cursor can leave the game area, and can be moved to another windows or to
+another monitor etc. This isn't bad <i>per se</i>, because from time to time one may
+need to do some other stuff on the computer (and the game can be paused). But
+the darn thing is that, as in many strategy games, moving the cursor to the
+edges of the game screen is associated with in-game <i>scrolling</i>, which is a
+pretty important and so-often used action. Or, when moving the cursor just a
+little too fast over the game window edge, the scrolling action doesn't get
+triggered, and … nothing happens instead!
+</p>
+
+<p>
+So, how to solve this? Certainly one solution is to somehow make the game grab
+the mouse input and confine it to the game area, but this only happens in
+full-screen mode (which we're not using). Also, grabbing the input inside the
+game window should be something that can be done and undone (a toggle action),
+since as mentioned above one may need to move the mouse, or change window focus,
+or type in another window, on another monitor etc.
+</p>
+
+<p>
+Since the source code is not available … <code>LD_PRELOAD</code> to the rescue! The
+game is SDL-based, and the trick here is to pre-load (i.e. inject) a library that
+overrides the <code>SDL_GetKeyState</code> function, in order to perform some <b>extra</b>
+actions, when called:
+</p>
+
+<ul class="org-ul">
+<li>check if the user pressed either <code>RCTRL</code> (VirtualBox-inspired) or (since not
+all keyboards have a right control key! e.g. HHKB) the <code>LCTRL-SPACE</code> combo.
+If so:</li>
+<li>grab input if it's not grabbed, release it if it's grabbed (the toggle).</li>
+</ul>
+<p>
+But how does one knows which SDL functions the game uses? Running:
+</p>
+
+<div class="highlight"><pre><span></span>$ strings majx <span class="p">|</span> grep SDL
+</pre></div>
+
+<p>
+… to get the list of functions, and reading some of the SDL 1.2 API docs is
+enough.
+</p>
+
+<p>
+The code:
+</p>
+
+<div class="highlight"><pre><span></span><span class="cp">#define _GNU_SOURCE</span>
+<span class="cp">#include</span> <span class="cpf">&lt;dlfcn.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;SDL/SDL.h&gt;</span><span class="cp"></span>
+
+<span class="c1">// pointer to the real function</span>
+<span class="n">Uint8</span><span class="o">*</span> <span class="p">(</span><span class="o">*</span><span class="n">real_SDL_GetKeyState</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">numkeys</span><span class="p">)</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">__attribute__</span> <span class="p">((</span><span class="n">constructor</span><span class="p">))</span> <span class="n">jail_init</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="c1">// match the library name loaded by our binary target</span>
+	<span class="n">dlopen</span><span class="p">(</span><span class="s">"libSDL-1.2.so.0"</span><span class="p">,</span> <span class="n">RTLD_LAZY</span><span class="p">);</span>
+	<span class="n">real_SDL_GetKeyState</span> <span class="o">=</span> <span class="n">dlsym</span><span class="p">(</span><span class="n">RTLD_NEXT</span><span class="p">,</span> <span class="s">"SDL_GetKeyState"</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// the wrapper</span>
+<span class="n">Uint8</span><span class="o">*</span> <span class="nf">SDL_GetKeyState</span> <span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">numkeys</span><span class="p">)</span>
+<span class="p">{</span>
+	<span class="n">Uint8</span><span class="o">*</span> <span class="n">keys</span><span class="p">;</span>
+	<span class="n">SDL_GrabMode</span> <span class="n">mode</span><span class="p">;</span>
+
+	<span class="n">keys</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">real_SDL_GetKeyState</span><span class="p">)(</span><span class="n">numkeys</span><span class="p">);</span>
+
+	<span class="k">if</span> <span class="p">((</span><span class="n">keys</span><span class="p">[</span><span class="n">SDLK_LCTRL</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">keys</span><span class="p">[</span><span class="n">SDLK_SPACE</span><span class="p">])</span><span class="o">||</span> <span class="n">keys</span><span class="p">[</span><span class="n">SDLK_RCTRL</span><span class="p">])</span>
+	<span class="p">{</span>
+		<span class="n">keys</span><span class="p">[</span><span class="n">SDLK_SPACE</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+		<span class="n">mode</span> <span class="o">=</span> <span class="n">SDL_WM_GrabInput</span><span class="p">(</span><span class="n">SDL_GRAB_QUERY</span><span class="p">);</span>
+		<span class="n">SDL_WM_GrabInput</span><span class="p">(</span><span class="n">mode</span> <span class="o">==</span> <span class="n">SDL_GRAB_OFF</span> <span class="o">?</span> <span class="nl">SDL_GRAB_ON</span> <span class="p">:</span> <span class="n">SDL_GRAB_OFF</span><span class="p">);</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="n">keys</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>
+Building on Arch Linux (64bit, <code>gcc-multilib</code> package):
+</p>
+
+<div class="highlight"><pre><span></span>$ gcc -m32 -fPIC -shared -o libjail.so jail.c -ldl
+</pre></div>
+
+<p>
+And finally, to run the game, use the following script, placed
+in a folder from your <code>PATH</code>:
+</p>
+
+<div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+<span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span>/usr/lib32 <span class="nv">LD_PRELOAD</span><span class="o">=</span><span class="nv">$HOME</span>/games/majesty/libjail.so <span class="nv">$HOME</span>/games/majesty/majx -w
+</pre></div>
+</div>
+</div>
+            
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="VanLaser",
+            disqus_url="https://vanlaser.github.io/posts/ld_preload-for-fun-and-profit/",
+        disqus_title="LD_PRELOAD for fun and profit",
+        disqus_identifier="cache/posts/ld_preload-for-fun-and-profit.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        
+    
+
+
+        </div>
+    </div>
+
+    
+    <footer><div class="container">
+            <div class="social">
+
+
+
+                <div class="social-entry">
+                    <a href="../../rss.xml" target="_blank">
+                        <i class="fa fa-rss"></i> 
+                    </a>
+                </div>
+            </div>
+                <div class="copyright">
+                    Contents © 2017         VanLaser - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+                    
+                </div>
+           
+        </div>
+    </footer><script src="../../assets/js/jquery-1.10.2.min.js" type="text/javascript"></script><script src="../../assets/js/headroom.min.js" type="text/javascript"></script><script src="../../assets/js/scripts.js" type="text/javascript"></script>
+</body>
+</html>

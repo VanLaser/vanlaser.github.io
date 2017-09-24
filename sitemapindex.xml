@@ -6,15 +6,27 @@
     xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <sitemap>
+  <loc>https://vanlaser.github.io/categories/c.xml</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>https://vanlaser.github.io/categories/ld_preload.xml</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>https://vanlaser.github.io/categories/sdl.xml</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </sitemap>
+ <sitemap>
   <loc>https://vanlaser.github.io/galleries/rss.xml</loc>
-  <lastmod>2017-09-23T20:56:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>https://vanlaser.github.io/rss.xml</loc>
-  <lastmod>2017-09-23T20:48:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>https://vanlaser.github.io/sitemap.xml</loc>
-  <lastmod>2017-09-23T20:56:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </sitemap>
 </sitemapindex>

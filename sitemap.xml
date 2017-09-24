@@ -7,22 +7,42 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>https://vanlaser.github.io/</loc>
-  <lastmod>2017-09-23T20:48:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://vanlaser.github.io/2017/</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </url>
  <url>
   <loc>https://vanlaser.github.io/archive.html</loc>
-  <lastmod>2017-09-23T20:56:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </url>
  <url>
   <loc>https://vanlaser.github.io/categories/</loc>
-  <lastmod>2017-09-23T20:48:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://vanlaser.github.io/categories/c/</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://vanlaser.github.io/categories/ld_preload/</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://vanlaser.github.io/categories/sdl/</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </url>
  <url>
   <loc>https://vanlaser.github.io/galleries/</loc>
-  <lastmod>2017-09-23T20:48:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </url>
  <url>
   <loc>https://vanlaser.github.io/listings/</loc>
-  <lastmod>2017-09-23T20:48:00Z</lastmod>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://vanlaser.github.io/posts/ld_preload-for-fun-and-profit/</loc>
+  <lastmod>2017-09-24T10:15:00Z</lastmod>
  </url>
 </urlset>
